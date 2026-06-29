@@ -1,0 +1,46 @@
+<launch>
+
+  <!-- Relay global para odometria (compartilhado por todos os filtros) -->
+  <node name="odom_relay" pkg="topic_tools" type="relay" args="husky_velocity_controller/odom /wheel/odom" />
+
+  <!-- ========================================== -->
+  <!-- 1. Apenas Odometria                        -->
+  <!-- ========================================== -->
+  <group ns="odom_only">
+    <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node" clear_params="true" output="log">
+      <rosparam command="load" file="$(find atividade_2)/config/ekf_odom_only.yaml" />
+    </node>
+    <node name="metrics_evaluator" pkg="atividade_2" type="metrics_evaluator.py" output="screen">
+      <param name="config_name" value="odom_only" />
+    </node>
+  </group>
+
+  <!-- ========================================== -->
+  <!-- 2. Odometria + IMU                         -->
+  <!-- ========================================== -->
+  <group ns="odom_imu">
+    <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node" clear_params="true" output="log">
+      <rosparam command="load" file="$(find atividade_2)/config/ekf_odom_imu.yaml" />
+    </node>
+    <node name="metrics_evaluator" pkg="atividade_2" type="metrics_evaluator.py" output="screen">
+      <param name="config_name" value="odom_imu" />
+    </node>
+  </group>
+
+  <!-- ========================================== -->
+  <!-- 3. Odometria + IMU + GPS                   -->
+  <!-- ========================================== -->
+  <group ns="odom_imu_gps">
+    <!-- Conversor GPS -> Odom (só pra esse namespace, mas escuta do /fix global) -->
+    <node name="gps_to_odom" pkg="atividade_2" type="gps_to_odom.py" output="log">
+      <remap from="/fix" to="/navsat/fix" />
+    </node>
+    <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node" clear_params="true" output="log">
+      <rosparam command="load" file="$(find atividade_2)/config/ekf_odom_imu_gps.yaml" />
+    </node>
+    <node name="metrics_evaluator" pkg="atividade_2" type="metrics_evaluator.py" output="screen">
+      <param name="config_name" value="odom_imu_gps" />
+    </node>
+  </group>
+
+</launch>

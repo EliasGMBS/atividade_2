@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>atividade_2</name>
+  <version>1.0.0</version>
+  <description>
+    Comparação de configurações de localização usando Extended Kalman Filter (EKF)
+    com o pacote robot_localization para o robô Husky.
+  </description>
+
+  <maintainer email="elias@todo.todo">Elias</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf</depend>
+  <depend>robot_localization</depend>
+  <depend>message_filters</depend>
+  <depend>gazebo_msgs</depend>
+
+  <exec_depend>topic_tools</exec_depend>
+  <exec_depend>husky_gazebo</exec_depend>
+  <exec_depend>husky_control</exec_depend>
+
+  <export>
+  </export>
+</package>

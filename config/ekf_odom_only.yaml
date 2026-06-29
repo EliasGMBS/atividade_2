@@ -1,0 +1,137 @@
+# =============================================================================
+# Configuração do EKF - Apenas Odometria de Rodas
+# =============================================================================
+# Este arquivo configura o nó ekf_localization_node do pacote robot_localization
+# para usar SOMENTE a odometria das rodas como fonte de dados.
+#
+# Esta é a configuração mais simples e serve como baseline para comparação
+# com as outras configurações que adicionam IMU e GPS.
+# =============================================================================
+
+# --- Frequência de publicação do filtro (em Hz) ---
+# Define com que frequência o EKF publica a estimativa de pose.
+# 50 Hz é adequado para aplicações de robótica móvel.
+frequency: 50
+
+# --- Período de espera por transformações TF (em segundos) ---
+# Tempo máximo que o nó aguarda por uma transformação TF antes de desistir.
+tf_timeout: 0.01
+
+# --- Frames de referência ---
+# world_frame: Frame de referência global. Pode ser 'odom' ou 'map'.
+#   - 'odom' é contínuo mas sofre drift ao longo do tempo.
+#   - 'map' é corrigido globalmente mas pode ter descontinuidades.
+world_frame: odom
+
+# odom_frame: Nome do frame de odometria.
+odom_frame: odom
+
+# base_link_frame: Nome do frame do robô.
+base_link_frame: base_link
+
+# --- Modo 2D ---
+# Quando true, o filtro ignora todas as variáveis 3D (z, roll, pitch)
+# e trabalha apenas no plano 2D (x, y, yaw). Isso reduz o espaço de
+# estados e melhora a estabilidade para robôs que se movem em superfícies planas.
+two_d_mode: true
+
+# --- Predição até o tempo atual ---
+# Quando true, o filtro projeta a estimativa de estado até o instante atual
+# usando o modelo de predição. Isso reduz a latência na estimativa de pose.
+predict_to_current_time: true
+
+# =============================================================================
+# Fonte de dados 0: Odometria das Rodas
+# =============================================================================
+# A odometria das rodas fornece velocidades lineares e angular do robô,
+# calculadas a partir dos encoders das rodas.
+#
+# Tópico original do Husky: husky_velocity_controller/odom
+# Redirecionado para: /wheel/odom (via topic_tools/relay no launch file)
+# =============================================================================
+
+# --- Tópico de odometria ---
+odom0: /wheel/odom
+
+# --- Configuração de fusão de dados ---
+# Define quais variáveis do sensor serão incorporadas ao filtro.
+# O vetor de 15 elementos corresponde a:
+#   [x,     y,      z,
+#    roll,  pitch,  yaw,
+#    vx,    vy,     vz,
+#    vroll, vpitch, vyaw,
+#    ax,    ay,     az]
+#
+# Para odometria de rodas, fundimos apenas as velocidades do twist:
+#   - vx (velocidade linear em x): true  -> posição 6
+#   - vy (velocidade linear em y): true  -> posição 7
+#   - vyaw (velocidade angular em z): true -> posição 11
+#
+# NÃO fundimos a pose (x, y, yaw) diretamente porque a odometria de rodas
+# acumula drift na pose. É melhor fundir velocidades e deixar o EKF integrar.
+odom0_config: [false, false, false,
+               false, false, false,
+               true,  true,  false,
+               false, false, true,
+               false, false, false]
+
+# --- Modo diferencial ---
+# Quando true, converte medições absolutas em medições relativas (incrementais).
+# Para odometria de rodas usando twist (velocidades), não é necessário.
+odom0_differential: false
+
+# --- Rejeição de medições espúrias ---
+# Se true, o filtro usa o teste de Mahalanobis para rejeitar medições
+# que estão muito distantes da estimativa atual. Útil para descartar outliers.
+odom0_relative: false
+
+# =============================================================================
+# Parâmetros de covariância do processo
+# =============================================================================
+# A matriz de covariância do processo (Q) controla o quanto o filtro
+# "confia" no modelo de predição vs. nas medições dos sensores.
+# Valores maiores significam menos confiança no modelo (mais peso nas medições).
+# Valores menores significam mais confiança no modelo (menos peso nas medições).
+#
+# A ordem dos elementos na diagonal é:
+#   [x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az]
+process_noise_covariance: [0.05,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0.05,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0.06,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0.03,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0.03,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0.06,  0,     0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0.025, 0,     0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0.025, 0,     0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0.04,  0,     0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0.01,  0,     0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0.01,  0,     0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0.02,  0,     0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0.01,  0,     0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0.01,  0,
+                           0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0.015]
+
+# =============================================================================
+# Covariância inicial da estimativa
+# =============================================================================
+# Define a incerteza inicial do estado estimado. Valores maiores indicam
+# maior incerteza inicial, o que faz o filtro convergir mais rapidamente
+# para as medições dos sensores no início.
+initial_estimate_covariance: [1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9]
+
+# Disable TF publication to avoid conflicts when running concurrently
+publish_tf: false

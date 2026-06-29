@@ -1,0 +1,35 @@
+<!-- =======================================================================
+  Launch file: Localização usando Odometria de Rodas + IMU
+  
+  Este launch file configura o EKF para fundir dados da odometria das rodas
+  com dados do sensor inercial (IMU), melhorando a estimativa de orientação.
+  
+  Nós lançados:
+    1. topic_tools/relay: republica husky_velocity_controller/odom -> /wheel/odom
+    2. ekf_localization_node: filtro EKF com config ekf_odom_imu.yaml
+    3. metrics_evaluator.py: avaliador de métricas de localização
+  ======================================================================= -->
+<launch>
+
+  <!-- ===== Relay da Odometria ===== -->
+  <!-- Republica o tópico de odometria do Husky para um tópico padronizado. -->
+  <node name="odom_relay" pkg="topic_tools" type="relay"
+        args="husky_velocity_controller/odom /wheel/odom" />
+
+  <!-- ===== Nó EKF ===== -->
+  <!-- Carrega a configuração do EKF com odometria + IMU.
+       O nó publica a pose filtrada em /odometry/filtered. -->
+  <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node"
+        clear_params="true" output="screen">
+    <rosparam command="load" file="$(find atividade_2)/config/ekf_odom_imu.yaml" />
+  </node>
+
+  <!-- ===== Avaliador de Métricas ===== -->
+  <!-- Nó que compara /odometry/filtered com /gt/odom (ground truth)
+       e calcula métricas de erro. -->
+  <node name="metrics_evaluator" pkg="atividade_2" type="metrics_evaluator.py"
+        output="screen">
+    <param name="config_name" value="odom_imu" />
+  </node>
+
+</launch>

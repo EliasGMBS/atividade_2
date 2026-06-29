@@ -1,0 +1,8 @@
+metric,value
+mean_pos_error,2.622041
+rmse,3.240728
+max_pos_error,6.401845
+final_pos_error,6.327327
+mean_yaw_error_deg,0.102697
+max_yaw_error_deg,5.216192
+total_samples,5734

@@ -1,0 +1,40 @@
+<!-- =======================================================================
+  Launch file: Simulação do Husky no Gazebo
+  
+  Este launch file inicia o robô Husky em um mundo Gazebo com o EKF
+  padrão do Husky DESABILITADO, permitindo que nosso EKF customizado
+  seja usado no lugar.
+  
+  Também lança o nó de ground truth para fornecer a pose real do robô,
+  usada como referência para avaliar a precisão da localização.
+  
+  Argumentos:
+    - world: mundo do Gazebo a ser carregado (padrão: empty_world)
+  ======================================================================= -->
+<launch>
+
+  <!-- ===== Argumentos ===== -->
+  <!-- Mundo do Gazebo a ser carregado -->
+  <arg name="world" default="empty_world" />
+
+  <!-- ===== Desabilitar EKF padrão do Husky ===== -->
+  <!-- A variável de ambiente ENABLE_EKF controla se o husky_control
+       lança seu EKF padrão. Definimos como 'false' para desabilitá-lo
+       e usar nossa própria configuração de EKF. -->
+  <env name="ENABLE_EKF" value="false" />
+
+  <!-- ===== Lançar Husky no Gazebo ===== -->
+  <!-- Inicia o Gazebo com o mundo selecionado e spawna o Husky.
+       O EKF padrão está desabilitado via variável de ambiente acima. -->
+  <include file="$(find lar_gazebo)/launch/lar_husky.launch">
+    <arg name="paused" value="false" />
+  </include>
+
+  <!-- ===== Ground Truth ===== -->
+  <!-- Publica a pose real (ground truth) do robô obtida diretamente
+       do Gazebo no tópico /gt/odom. Usado como referência para
+       calcular métricas de erro da localização. -->
+  <node name="ground_truth_odom" pkg="atividade_2" type="ground_truth_odom.py"
+        output="screen" />
+
+</launch>

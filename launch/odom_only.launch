@@ -1,0 +1,36 @@
+<!-- =======================================================================
+  Launch file: Localização usando APENAS odometria de rodas
+  
+  Este launch file configura o EKF para usar somente a odometria das rodas
+  como fonte de dados. Serve como baseline para comparação.
+  
+  Nós lançados:
+    1. topic_tools/relay: republica husky_velocity_controller/odom -> /wheel/odom
+    2. ekf_localization_node: filtro EKF com config ekf_odom_only.yaml
+    3. metrics_evaluator.py: avaliador de métricas de localização
+  ======================================================================= -->
+<launch>
+
+  <!-- ===== Relay da Odometria ===== -->
+  <!-- Republica o tópico de odometria do Husky para um tópico padronizado.
+       Isso permite que todas as configurações usem o mesmo nome de tópico. -->
+  <node name="odom_relay" pkg="topic_tools" type="relay"
+        args="husky_velocity_controller/odom /wheel/odom" />
+
+  <!-- ===== Nó EKF ===== -->
+  <!-- Carrega a configuração do EKF e lança o nó de localização.
+       O nó publica a pose filtrada em /odometry/filtered. -->
+  <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node"
+        clear_params="true" output="screen">
+    <rosparam command="load" file="$(find atividade_2)/config/ekf_odom_only.yaml" />
+  </node>
+
+  <!-- ===== Avaliador de Métricas ===== -->
+  <!-- Nó que compara /odometry/filtered com /gt/odom (ground truth)
+       e calcula métricas de erro (RMSE, erro máximo, etc.) -->
+  <node name="metrics_evaluator" pkg="atividade_2" type="metrics_evaluator.py"
+        output="screen">
+    <param name="config_name" value="odom_only" />
+  </node>
+
+</launch>

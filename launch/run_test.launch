@@ -1,0 +1,31 @@
+<!-- =======================================================================
+  Launch file: Execução de Teste com Configuração Selecionável
+  
+  Este é o launch file principal que permite selecionar qual configuração
+  de EKF será usada durante o teste.
+  
+  Uso:
+    roslaunch atividade_2 run_test.launch config:=odom_only
+    roslaunch atividade_2 run_test.launch config:=odom_imu
+    roslaunch atividade_2 run_test.launch config:=odom_imu_gps
+  
+  Argumentos:
+    - config: nome da configuração (padrão: odom_only)
+              Opções: odom_only, odom_imu, odom_imu_gps
+  ======================================================================= -->
+<launch>
+
+  <!-- ===== Argumento de Configuração ===== -->
+  <!-- Seleciona qual configuração de EKF será utilizada.
+       Opções disponíveis:
+         - odom_only:     apenas odometria de rodas (baseline)
+         - odom_imu:      odometria + IMU
+         - odom_imu_gps:  odometria + IMU + GPS (mais completa) -->
+  <arg name="config" default="odom_only" />
+
+  <!-- ===== Incluir Launch File da Configuração Selecionada ===== -->
+  <!-- Inclui dinamicamente o launch file correspondente à configuração
+       escolhida. O nome do arquivo é construído a partir do argumento. -->
+  <include file="$(find atividade_2)/launch/$(arg config).launch" />
+
+</launch>

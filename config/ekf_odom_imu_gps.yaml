@@ -1,0 +1,44 @@
+frequency: 50
+silent_tf_failure: false
+two_d_mode: true
+publish_tf: true
+publish_acceleration: false
+
+map_frame: map
+odom_frame: odom
+base_link_frame: base_link
+world_frame: map
+
+# Usaremos wheel odometry para as velocidades
+odom0: /wheel/odom
+odom0_config: [false, false, false,
+               false, false, false,
+               true,  true,  false,
+               false, false, true,
+               false, false, false]
+odom0_queue_size: 10
+odom0_differential: false
+odom0_relative: false
+
+# IMU
+imu0: /imu/data
+imu0_config: [false, false, false,
+              true,  true,  true,
+              false, false, false,
+              true,  true,  true,
+              true,  true,  true]
+imu0_queue_size: 10
+imu0_differential: false
+imu0_relative: true
+imu0_remove_gravitational_acceleration: true
+
+# GPS convertido para odometria local
+odom1: /gps/odom
+odom1_config: [true,  true,  false,
+               false, false, false,
+               false, false, false,
+               false, false, false,
+               false, false, false]
+odom1_queue_size: 10
+odom1_differential: false
+odom1_relative: false
