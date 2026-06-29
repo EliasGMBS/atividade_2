@@ -165,7 +165,7 @@ O script `plot_results.py` gera uma única imagem consolidada no diretório `res
 
 1. **`atividade_2_comparacao_plots.png`** — Painel com as trajetórias estimadas vs. ground truth e os erros de posição ao longo do tempo.
 
-![Comparação dos Filtros de Kalman](results/atividade_2_comparacao_plots.png)
+![Comparação dos Filtros de Kalman](results/kalman_fusion_comparacao_plots.png)
 
 ## Discussão dos Resultados
 
